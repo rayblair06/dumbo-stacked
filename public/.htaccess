@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteRule ^(cms)($|/) - [L]
+RewriteRule ^(tech)($|/) - [L]
+AddType image/x-icon .ico
+RewriteRule ^favicon.ico favicon.ico [NC,L]
+RewriteCond %{REQUEST_URI}  !(\.png|\.jpg|\.webp|\.gif|\.jpeg|\.zip|\.css|\.svg|\.js\.ico)$
+RewriteRule (.*) index.php [QSA,L]
