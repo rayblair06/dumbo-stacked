@@ -270,21 +270,72 @@
             "time": "2024-08-06T07:58:55+00:00"
         },
         {
+            "name": "nikic/fast-route",
+            "version": "v1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nikic/FastRoute.git",
+                "reference": "181d480e08d9476e61381e04a71b34dc0432e812"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nikic/FastRoute/zipball/181d480e08d9476e61381e04a71b34dc0432e812",
+                "reference": "181d480e08d9476e61381e04a71b34dc0432e812",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35|~5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/functions.php"
+                ],
+                "psr-4": {
+                    "FastRoute\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Nikita Popov",
+                    "email": "nikic@php.net"
+                }
+            ],
+            "description": "Fast request router for PHP",
+            "keywords": [
+                "router",
+                "routing"
+            ],
+            "support": {
+                "issues": "https://github.com/nikic/FastRoute/issues",
+                "source": "https://github.com/nikic/FastRoute/tree/master"
+            },
+            "time": "2018-02-13T20:26:39+00:00"
+        },
+        {
             "name": "notrab/dumbo",
             "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/notrab/dumbo.git",
-                "reference": "a26b00d644c0559004770328f25c65e5026a1551"
+                "reference": "a24f90eabbdab627a7c85ae8f43fa8b7bb988dcd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/notrab/dumbo/zipball/a26b00d644c0559004770328f25c65e5026a1551",
-                "reference": "a26b00d644c0559004770328f25c65e5026a1551",
+                "url": "https://api.github.com/repos/notrab/dumbo/zipball/a24f90eabbdab627a7c85ae8f43fa8b7bb988dcd",
+                "reference": "a24f90eabbdab627a7c85ae8f43fa8b7bb988dcd",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/psr7": "^2.0",
+                "nikic/fast-route": "^1.3",
                 "php": ">=8.3",
                 "psr/http-factory": "^1.0",
                 "psr/http-message": "^2.0",
@@ -316,7 +367,7 @@
                 "issues": "https://github.com/notrab/dumbo/issues",
                 "source": "https://github.com/notrab/dumbo/tree/main"
             },
-            "time": "2024-08-27T06:02:24+00:00"
+            "time": "2024-08-30T09:25:52+00:00"
         },
         {
             "name": "php-di/invoker",
