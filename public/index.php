@@ -21,6 +21,5 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
 
-    echo 'An error occurred while processing your request. Please try again later.';
-    die();
+    exit('An error occurred while processing your request. Please try again later.');
 }

@@ -1,0 +1,172 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - main # Trigger the workflow on push to the main branch
+  pull_request:
+    branches:
+      - main # Trigger the workflow on pull requests targeting the main branch
+
+env:
+  APP_NAME: dumbo-stacked # Define the application name
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/dumbo-stacked # Docker image name based on Docker Hub username
+  PHP_VERSION: "8.3" # Specify the PHP version to use
+
+jobs:
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+    outputs:
+      composer-cache-dir: ${{ env.COMPOSER_CACHE_DIR }} # Export the composer cache directory as an output
+
+    steps:
+      # Check out the code from the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install PHP with the PHP version defined in the environment
+      - name: Install PHP v${{ env.PHP_VERSION }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2 # Install Composer v2
+          coverage: none # No code coverage tool needed
+
+      # Validate composer files to ensure they're correct
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      # Get the Composer cache directory and save it as an environment variable
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          echo "COMPOSER_CACHE_DIR=$(composer config cache-files-dir)" >> $GITHUB_ENV
+
+      # Cache Composer dependencies to speed up subsequent runs
+      - name: Cache dependencies installed with composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }} # Path to the Composer cache directory
+          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('composer.lock') }} # Cache key based on PHP version and composer.lock file hash
+          restore-keys: php-${{ env.PHP_VERSION }}-composer- # Restore cache if an exact match is not found
+
+      # Install PHP dependencies without showing progress and suggestions
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+  test-and-lint:
+    needs: setup # This job depends on the successful completion of the setup job
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Define matrix tasks for running tests and linter (commented out - might add this later)
+        task: [
+            test,
+            # lint
+          ]
+
+    steps:
+      # Check out the code from the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install PHP with the PHP version defined in the environment
+      - name: Install PHP v${{ env.PHP_VERSION }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2 # Install Composer v2
+          coverage: none # No code coverage tool needed
+
+      # Reuse the Composer cache to speed up dependency installation
+      - name: Use Composer Cache
+        env:
+          COMPOSER_CACHE_DIR: ${{ needs.setup.outputs.composer-cache-dir }} # Use the Composer cache directory from the setup job
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }} # Path to the Composer cache directory
+          key: php-${{ env.PHP_VERSION }}-composer-${{ hashFiles('composer.lock') }} # Cache key based on PHP version and composer.lock file hash
+          restore-keys: php-${{ env.PHP_VERSION }}-composer- # Restore cache if an exact match is not found
+
+      # Install PHP dependencies without showing progress and suggestions
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      # Migrate and seed the database
+      # Only run this step if the task is 'test'
+      # - name: Setup Database
+      #   if: matrix.task == 'test'
+      #   run: |
+      #     make migrate
+      #     make seed
+
+      # Run PHPUnit tests
+      # Only run tests if the task is 'test'
+      - name: Run Tests
+        if: matrix.task == 'test'
+        run: vendor/bin/phpunit tests
+
+      # Run PHP-CS-Fixer linter
+      # Only run linter if the task is 'lint'
+      - name: Run Linter
+        if: matrix.task == 'lint'
+        run: vendor/bin/php-cs-fixer
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: test-and-lint # This job depends on the successful completion of the test-and-lint job
+
+    steps:
+      # Check out the code from the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Set up Docker Buildx for building multi-platform images
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Extract metadata for the Docker image
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.IMAGE_NAME }} # Set the Docker image name
+
+      # Build the Docker image using the extracted metadata tags
+      - name: Build Docker Image
+        run: docker build --tag ${{ steps.meta.outputs.tags }} .
+
+      # (Optional) Save the Docker image as a tar file - if you were wanting to break up the build and deploy steps
+      # - name: Save Docker Image
+      #   run: docker save ${{ steps.meta.outputs.tags }} -o image.tar
+
+      # (Optional) Upload the Docker image tar file as a build artifact - if you were wanting to break up the build and deploy steps
+      # - name: Upload Docker Image as Artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: docker-image  # Name the artifact
+      #     path: image.tar  # Path to the Docker image tar file
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # (Optional) Download the Docker image tar file as a build artifact - only required if artifact is uploaded
+      # - name: Download Docker Image Artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: docker-image  # Name of the artifact to download
+      #     path: .  # Path to save the downloaded artifact
+
+      # (Optional) Load the Docker image from the tar file - only required if artifact is uploaded
+      # - name: Load Docker Image
+      #   run: docker load -i image.tar
+
+      - name: Push Docker Image to Docker Hub
+        run: docker push ${{ steps.meta.outputs.tags }}
+
+      - name: Log out from Docker Hub
+        run: docker logout

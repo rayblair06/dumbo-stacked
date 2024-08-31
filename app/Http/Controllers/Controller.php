@@ -28,9 +28,15 @@ class Controller
      */
     public function view(string $path, array $attributes = [], int $status_code = 200): string
     {
+        $cacheDirectory = base_path('cache/views');
+
+        if (!is_dir($cacheDirectory)) {
+            mkdir($cacheDirectory, 0755, true);
+        }
+
         $this
             ->templateEngine
-            ->setTempDirectory(base_path('cache/views'));
+            ->setTempDirectory($cacheDirectory);
 
         $templatePath = base_path("views/{$path}");
 
