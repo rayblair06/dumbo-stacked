@@ -1,7 +1,0 @@
-spec:
-  name: dumbo-stacked
-  services:
-    - name: web
-      git:
-        branch: main
-        repo_clone_url: https://github.com/rayblair06/dumbo-stacked

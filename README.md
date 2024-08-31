@@ -25,8 +25,6 @@
 
 A micro-framework built on top of [Dumbo](https://github.com/notrab/dumbo).
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/rayblair06/dumbo-stacked/tree/main&refcode=a7fe7b55aaf7)
-
 ### Built With
 
 - [Dumbo](https://github.com/notrab/dumbo)
@@ -67,7 +65,7 @@ A micro-framework built on top of [Dumbo](https://github.com/notrab/dumbo).
     ```bash
     make start
     ```
-    
+
 ## Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
